@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         //hash password before storing
         const hashedPassword = bcrypt.hashSync(password, 8)
 
+        // store user data in the database
         const newUser = await database('UserProfile').insert({
             username: validateData.username,
             email: validateData.email,
@@ -39,7 +40,10 @@ export async function POST(req: NextRequest) {
             last_login_at: new Date()
         }).returning('*')
 
-        const authToken = generateAuthToken(newUser._id)
+        // generate auth token
+        const authToken = await generateAuthToken({ newUser })
+
+        // set auth setAuthCookies
         setAuthCookies(authToken)
 
         return NextResponse.json({

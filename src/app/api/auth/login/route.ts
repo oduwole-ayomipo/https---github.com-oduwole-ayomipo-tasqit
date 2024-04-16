@@ -1,4 +1,4 @@
-import { generateAuthToken, setAuthCookies } from "@/app/lib/server-helpers";
+import { generateAuthToken, isUserAuthorized, setAuthCookies } from "@/app/lib/server-helpers";
 import { LoginSchema } from "@/app/validation/schema";
 import { database } from "@/db/knex";
 import { NextRequest, NextResponse } from "next/server";
@@ -26,15 +26,14 @@ export async function POST(req: NextRequest) {
         if (!user)
             return NextResponse.json({ success: false, error: 'User with this email does not exist' }, { status: 400 })
 
-        // decrypt and check if passwprd match
+        // decrypt and check if password match
         const isPasswordCorrect = await bcrypt.compare(validatedData.password, user[0].password)
 
         if (!isPasswordCorrect)
             return NextResponse.json({ success: false, error: 'Incorrect password' }, { status: 400 })
 
-
         // generate auth token
-        const authToken = generateAuthToken(user[0]._id)
+        const authToken = await generateAuthToken({ user })
 
         // set auth setAuthCookies
         setAuthCookies(authToken)
@@ -51,5 +50,27 @@ export async function POST(req: NextRequest) {
         } else {
             return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
         }
+    }
+}
+
+// update the user last login time
+export async function PATCH(req: NextRequest) {
+    try {
+        const user = await isUserAuthorized()
+
+        if (!user)
+            return NextResponse.json({ success: false, msg: "Login to use this service" }, { status: 401 })
+
+        const last_login_at = new Date()
+
+        const userLoginTime = await database('UserProfile')
+            .where('email', user.email)
+            .update({ last_login_at })
+            .returning('*')
+
+        return NextResponse.json({ users: userLoginTime }, { status: 200 })
+
+    } catch (e) {
+        return NextResponse.json({ success: false, msg: 'internal server error', error: e }, { status: 500 })
     }
 }

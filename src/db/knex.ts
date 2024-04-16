@@ -1,5 +1,3 @@
-import { Knex } from "knex"
-
 export const database = require('knex')(
     {
         client: 'pg',
