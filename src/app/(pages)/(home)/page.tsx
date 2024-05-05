@@ -1,4 +1,6 @@
-const page = () => {
+import React from 'react'
+
+const Page = () => {
   return (
     <main>
       <div className="flex justify-center items-center h-[100vh]">
@@ -8,4 +10,4 @@ const page = () => {
   )
 }
 
-export default page()
+export default Page

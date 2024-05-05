@@ -29,10 +29,7 @@ export const LoginForm = () => {
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit(onSubmit)
-        }}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 p-4 bg-orange-50"
       >
         <FormField
